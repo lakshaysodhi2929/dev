@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from "jsonwebtoken";
-import { Product, User } from '../db';
+import { Order, Product, User } from '../db';
 import { z } from "zod";
 import { authenticateJwt } from '../middleware';
 
@@ -91,15 +91,19 @@ router.get('/api/product/category/:categoryName', authenticateJwt, async (req, r
   }
 })
 
-router.put('/api/order/add', authenticateJwt, async (req, res) => {
+router.put('/api/cart/add', authenticateJwt, async (req, res) => {
   try{
+    const qty = req.body.quantity;
     const userId = req.headers["userId"];
     const orderedProduct = await Product.findOne({_id: req.body.productId});
     const user = await User.findOne({_id: userId});
     if(user && orderedProduct) {
-      user.cart.push(orderedProduct);
+      user.cart.push({
+        product: orderedProduct,
+        quantity: qty
+      });
       await user.save();
-      res.json({ message: 'Order added successfully' });
+      res.json({ message: 'product added in cart successfully'});
     } else {
       res.status(401).json({message: 'User or orderProduct Not found'});
     }
@@ -108,16 +112,96 @@ router.put('/api/order/add', authenticateJwt, async (req, res) => {
   }
 })
 
+router.put('api/order/add', authenticateJwt ,async (req, res)=>{
+  try{
+    const userId = req.headers["userId"];
+    const user = await User.findOne({_id: userId});
+    if(user) {
+      user.cart.forEach(item => {
+        Product.findByIdAndUpdate(
+          item.product,
+          { $inc: { productOrderCnt: 1 } },
+        )
+      });
+      const newOrder = new Order({
+        products: user.cart,
+        date: new Date(),
+        user: user._id,
+        status: 'Active'
+      })
+      await newOrder.save();
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            cart: []
+          }
+        }
+      );
+
+      res.json({ message: 'Order added successfully', orderId: newOrder._id });
+    } else {
+      res.status(401).json({message: 'User or orderProduct Not found'});
+    }
+  }catch(err){
+      res.status(401).json({message: 'Error in adding product'});
+  }
+})
+
+//make that for cart and order seperately
+router.put('/api/cart/remove', authenticateJwt, async (req, res) => {
+  try{
+    const userId = req.headers["userId"];
+    const orderedProduct = await Product.findOne({_id: req.body.productId});
+    const orderId = req.body.orderId;
+    if(orderedProduct) {
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          $pull: {
+            cart: {
+              product: orderedProduct._id
+            }
+          }
+        },
+        {new: true}
+      );
+      if(updatedUser){
+        res.json({ message: 'product removed from cart successfully', updatedCart: updatedUser.cart });
+      } else {
+        res.status(401).json({message: 'User Not found'});
+      }
+    } else {
+      res.status(401).json({message: 'OrderProduct Not found'});
+    }
+  }catch(err){
+      res.status(401).json({message: 'Error in removing product from cart'});
+  }
+})
+
+router.put('/api/order/remove', authenticateJwt, async (req, res) => {
+  try{
+    const userId = req.headers["userId"];
+    const orderId = req.body.orderId;
+      await Order.findByIdAndDelete(orderId);
+      res.json({ message: 'order removed successfully'});
+  }catch(err){
+      res.status(401).json({message: 'Error in removing order'});
+  }
+})
+
 router.put('/api/order/remove', authenticateJwt, async (req, res) => {
   try{
     const userId = req.headers["userId"];
     const orderedProduct = await Product.findOne({_id: req.body.productId});
+    const orderId = req.body.orderId;
     if(orderedProduct) {
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { $pull: { cart: orderedProduct._id } },
         {new: true}
       );
+      await Order.findByIdAndDelete(orderId);
       if(updatedUser){
         res.json({ message: 'order removed successfully', updatedCart: updatedUser.cart });
       } else {
@@ -160,11 +244,7 @@ router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, r
       await user.save();
     } catch (err){
       // if user data is not saved even then we want the product info to be served
-      if(productId && updatedProduct){
-        res.status(201).json(updatedProduct);
-      } else {
-        res.status(401).json({message: "product doesn't exist"});
-      }
+      console.log('error in saving user viewed Product');
     }
 
     if(productId && updatedProduct){
