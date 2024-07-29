@@ -19,5 +19,6 @@ app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
 
-//TODO: change the mongoose link
-mongoose.connect('mongodb://localhost:27017/courses', { dbName: "selling-app" });
+mongoose.connect('mongodb+srv://lakshaysodhi2929:lakshay423@cluster0.meyacar.mongodb.net/selling-app',{ dbName: "selling-app" }).then(() => console.log('connected successfully to mongodb'))
+.catch(()=> console.log('not connected to db'));
+// mongodb+srv://lakshaysodhi2929:lakshay423@cluster0.meyacar.mongodb.net/

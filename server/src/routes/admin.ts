@@ -1,4 +1,4 @@
-import { jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import express from 'express';
 import { z } from "zod";
 import { authenticateJwt } from '../middleware';
