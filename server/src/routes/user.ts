@@ -1,21 +1,9 @@
+import { signinInput, signupInput } from '../../../common/types/index';
 import express from 'express';
 import jwt from "jsonwebtoken";
 import { Order, Product, User } from '../db';
 import { z } from "zod";
 import { authenticateJwt } from '../middleware';
-
-const signupInput = z.object({
-    username: z.string(),
-    password: z.string(),
-    address: z.string(),
-    phoneNumber: z.string()
-});
-
-const signinInput = z.object({
-    username: z.string(),
-    password: z.string()
-});
-
 
 const router = express.Router();
 
@@ -23,7 +11,8 @@ router.post('/signup', async (req, res)=>{
     let parsedInput = signupInput.safeParse(req.body)
     if (!parsedInput.success) {
       return res.status(403).json({
-        msg: "error"
+        msg: "error",
+        body: req.body
       });
     }
     const username = parsedInput.data.username; 
