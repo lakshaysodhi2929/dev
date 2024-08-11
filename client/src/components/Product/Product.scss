@@ -1,0 +1,45 @@
+// ProductDisplay.module.scss
+
+.container {
+    border: 1px solid #ccc;
+    padding: 16px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin: 16px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    margin: 0 0 8px 0;
+  }
+  
+  .category {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  
+  .image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .description {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .video {
+    margin-top: 8px;
+  }
+  

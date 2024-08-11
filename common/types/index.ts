@@ -12,6 +12,20 @@ export const signinInput = z.object({
     password: z.string().min(1)
 });
 
+export const trendingProductsParams = z.object({
+    noOfProducts: z.number()
+});
+
+export const productsForCategoryParams = z.object({
+    categoryName: z.string()
+});
+
+export const productInfoParams = z.object({
+    productId: z.string()
+});
+
 export type SignUpParams = z.infer<typeof signupInput>;
 
 export type SignInParams = z.infer<typeof signinInput>;
+
+export type TrendingProductsParams = z.infer<typeof trendingProductsParams>;

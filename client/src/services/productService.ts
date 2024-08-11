@@ -1,17 +1,31 @@
+import { TrendingProductsParams } from '../../../common/types';
 import API from '../Api';
 
+export async function getTrendingProducts(params: TrendingProductsParams) {
+  const url = `http://localhost:3000/user/api/product/trendingProducts`;
+  const response = await API.get(url, { params });
+
+  return response?.data;
+}
+
 export async function getCategoryDict() {
-  const url = `/user/signup`;
-  const response = await API.post(url);
+  const url = `http://localhost:3000/user/api/product/categoryDict`;
+  const response = await API.get(url);
 
-  return response?.data.result;
+  return response?.data;
 }
 
-export async function getProductsForCategory(requestBody) {
-  const url = `/user/login`;
-  const response = await API.post(url, requestBody);
+export async function getProductsForCategory(categoryName: string) {
+  const url = `http://localhost:3000/user/api/product/category/${categoryName}`;
+  const response = await API.get(url);
 
-  return response?.data.result;
+  return response?.data;
 }
 
+export async function getProductInfo(productId: string) {
+  const url = `http://localhost:3000/user/api/product/productInfo/${productId}`;
+  const response = await API.get(url);
+
+  return response?.data;
+}
 

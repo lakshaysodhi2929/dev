@@ -1,4 +1,4 @@
-import { signinInput, signupInput } from '../../../common/types/index';
+import { productInfoParams, productsForCategoryParams, signinInput, signupInput, trendingProductsParams } from '../../../common/types/index';
 import express from 'express';
 import jwt from "jsonwebtoken";
 import { Order, Product, User } from '../db';
@@ -11,7 +11,7 @@ router.post('/signup', async (req, res)=>{
     let parsedInput = signupInput.safeParse(req.body)
     if (!parsedInput.success) {
       return res.status(403).json({
-        msg: "error",
+        msg: "error in input",
         body: req.body
       });
     }
@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
     let parsedInput = signinInput.safeParse(req.body)
     if (!parsedInput.success) {
       return res.status(403).json({
-        msg: "error"
+        msg: "error in input"
       });
     }
 
@@ -52,9 +52,19 @@ router.post('/login', async (req, res) => {
   });
 
 router.get('/api/product/trendingProducts', authenticateJwt, async (req, res) => {
-    const noOfProducts = req.query.noOfProducts;
+  let parsedInput = trendingProductsParams.safeParse(req.query);
+    if (!parsedInput.success) {
+      return res.status(403).json({
+        msg: "error in input"
+      });
+    }
+    const noOfProducts = parsedInput.data.noOfProducts;
     try{
-      const topProducts = await Product.find().sort({productMonthlyViewCnt: -1}).limit(noOfProducts).exec();
+      const topProducts = await Product.find()
+      .sort({ productMonthlyViewCnt: -1 })
+      .limit(noOfProducts)
+      .select('name image price description _id')
+      .exec();
       res.status(201).json(topProducts);
   }catch(err){
       res.status(401).json({message: 'Error in fetching Trending Products'});
@@ -72,8 +82,15 @@ router.get('/api/product/categoryDict', authenticateJwt, async (req, res) => {
 })
 
 router.get('/api/product/category/:categoryName', authenticateJwt, async (req, res) => {
+  let parsedInput = productsForCategoryParams.safeParse(req.params);
+    if (!parsedInput.success) {
+      return res.status(403).json({
+        msg: "error in input"
+      });
+    }
   try{
-    const productsForReqCategory = await Product.find({category: req.params.categoryName});
+    const productsForReqCategory = await Product.find({category: parsedInput.data.categoryName})
+    .select('name image price description _id');
       res.status(201).json(productsForReqCategory);
   }catch(err){
       res.status(401).json({message: 'Error in fetching Products for Required Categorie'});
@@ -179,31 +196,6 @@ router.put('/api/order/remove', authenticateJwt, async (req, res) => {
   }
 })
 
-router.put('/api/order/remove', authenticateJwt, async (req, res) => {
-  try{
-    const userId = req.headers["userId"];
-    const orderedProduct = await Product.findOne({_id: req.body.productId});
-    const orderId = req.body.orderId;
-    if(orderedProduct) {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $pull: { cart: orderedProduct._id } },
-        {new: true}
-      );
-      await Order.findByIdAndDelete(orderId);
-      if(updatedUser){
-        res.json({ message: 'order removed successfully', updatedCart: updatedUser.cart });
-      } else {
-        res.status(401).json({message: 'User Not found'});
-      }
-    } else {
-      res.status(401).json({message: 'OrderProduct Not found'});
-    }
-  }catch(err){
-      res.status(401).json({message: 'Error in removing product'});
-  }
-})
-
 router.get('/api/user', authenticateJwt, async (req, res) => {
   try{
     const userId = req.headers["userId"];
@@ -219,10 +211,16 @@ router.get('/api/user', authenticateJwt, async (req, res) => {
 })
 
 router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, res) => {
+  let parsedInput = productInfoParams.safeParse(req.params);
+    if (!parsedInput.success) {
+      return res.status(403).json({
+        msg: "error in input"
+      });
+    }
   try{
     const userId = req.headers["userId"];
     const user = User.findOne({_id: userId});
-    const productId = req.params.productId;
+    const productId = parsedInput.data.productId;
     const updatedProduct= await User.findByIdAndUpdate(
       productId,
       { $inc: { productMonthlyViewCnt: 1 } },
