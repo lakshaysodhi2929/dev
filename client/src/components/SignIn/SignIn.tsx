@@ -2,6 +2,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import './SignIn.scss';
 import { SignInParams } from '../../../../common/types';
 import { userLogin } from '../../services/authService';
+import { setCookie } from '../../../utils/index.ts';
 
 const SignIn = () => {
   const [userCredentials, setUserCredentials] = useState<SignInParams>({
@@ -19,7 +20,8 @@ const SignIn = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await userLogin(userCredentials);
+    const loginResp = await userLogin(userCredentials);
+    setCookie('token', loginResp.token);
   };
 
   return (
