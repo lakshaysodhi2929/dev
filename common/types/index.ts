@@ -24,8 +24,22 @@ export const productInfoParams = z.object({
     productId: z.string()
 });
 
+export const addCartInput = z.object({
+    productId: z.string(),
+    quantity: z.number()
+});
+
+export const removeCartInput = z.object({
+    productId: z.string(),
+    quantity: z.number()
+})
+
 export type SignUpParams = z.infer<typeof signupInput>;
 
 export type SignInParams = z.infer<typeof signinInput>;
 
 export type TrendingProductsParams = z.infer<typeof trendingProductsParams>;
+
+export type AddCartInput = z.infer<typeof addCartInput>;
+
+export type RemoveCartInput = z.infer<typeof removeCartInput>;

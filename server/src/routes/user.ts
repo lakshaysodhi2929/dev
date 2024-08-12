@@ -1,9 +1,10 @@
-import { productInfoParams, productsForCategoryParams, signinInput, signupInput, trendingProductsParams } from '../../../common/types/index';
+import { addCartInput, productInfoParams, productsForCategoryParams, removeCartInput, signinInput, signupInput, trendingProductsParams } from '../../../common/types/index';
 import express from 'express';
 import jwt from "jsonwebtoken";
 import { Order, Product, User } from '../db';
 import { z } from "zod";
 import { authenticateJwt } from '../middleware';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -98,10 +99,16 @@ router.get('/api/product/category/:categoryName', authenticateJwt, async (req, r
 })
 
 router.put('/api/cart/add', authenticateJwt, async (req, res) => {
+  let parsedInput = addCartInput.safeParse(req.body);
+    if (!parsedInput.success) {
+      return res.status(403).json({
+        msg: "error in input"
+      });
+    }
   try{
-    const qty = req.body.quantity;
+    const qty = parsedInput.data.quantity;
     const userId = req.headers["userId"];
-    const orderedProduct = await Product.findOne({_id: req.body.productId});
+    const orderedProduct = await Product.findOne({_id: parsedInput.data.productId});
     const user = await User.findOne({_id: userId});
     if(user && orderedProduct) {
       user.cart.push({
@@ -154,24 +161,38 @@ router.put('api/order/add', authenticateJwt ,async (req, res)=>{
   }
 })
 
-//make that for cart and order seperately
 router.put('/api/cart/remove', authenticateJwt, async (req, res) => {
+  let parsedInput = removeCartInput.safeParse(req.body);
+    if (!parsedInput.success) {
+      return res.status(403).json({
+        msg: "error in input"
+      });
+    }
   try{
+    const qty = Number(parsedInput.data.quantity);
     const userId = req.headers["userId"];
-    const orderedProduct = await Product.findOne({_id: req.body.productId});
-    const orderId = req.body.orderId;
+    const orderedProduct = await Product.findOne({_id: parsedInput.data.productId});
     if(orderedProduct) {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        {
-          $pull: {
-            cart: {
-              product: orderedProduct._id
+      let updatedUser;
+      if(qty>0){
+        updatedUser = await User.findOneAndUpdate(
+          { _id: userId, 'cart.product': orderedProduct._id },
+          { $set: { 'cart.$.quantity': qty } },
+          {new: true}
+        );
+      } else {
+        updatedUser = await User.findByIdAndUpdate(
+          userId,
+          {
+            $pull: {
+              cart: {
+                product: orderedProduct._id
+              }
             }
-          }
-        },
-        {new: true}
-      );
+          },
+          {new: true}
+        );
+      }
       if(updatedUser){
         res.json({ message: 'product removed from cart successfully', updatedCart: updatedUser.cart });
       } else {
@@ -187,7 +208,6 @@ router.put('/api/cart/remove', authenticateJwt, async (req, res) => {
 
 router.put('/api/order/remove', authenticateJwt, async (req, res) => {
   try{
-    const userId = req.headers["userId"];
     const orderId = req.body.orderId;
       await Order.findByIdAndDelete(orderId);
       res.json({ message: 'order removed successfully'});
@@ -219,7 +239,7 @@ router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, r
     }
   try{
     const userId = req.headers["userId"];
-    const user = User.findOne({_id: userId});
+    const user = await User.findOne({_id: userId});
     const productId = parsedInput.data.productId;
     const updatedProduct= await User.findByIdAndUpdate(
       productId,
@@ -227,11 +247,14 @@ router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, r
       {new: true}
     );
     try{
-      user.productsViewed.push(productId);
-      await user.save();
+      const objId = new mongoose.Types.ObjectId(productId)
+      if(user){
+        user.productsViewed.push(objId);
+        await user.save();
+      } else new Error('user not found');
     } catch (err){
       // if user data is not saved even then we want the product info to be served
-      console.log('error in saving user viewed Product');
+      console.log('error in saving user viewed Product', err);
     }
 
     if(productId && updatedProduct){
