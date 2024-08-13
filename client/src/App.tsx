@@ -7,6 +7,7 @@ import SignIn from './components/SignIn/SignIn';
 import Home from './components/Home/Home';
 import CategoryItems from './components/CategoryItems/CategoryItems';
 import Product from './components/Product/Product';
+import Cart from './components/Cart/Cart';
 
 export const App = () => (
     <>
@@ -31,6 +32,10 @@ export const App = () => (
           <Route 
             element={ <Product /> }
             path='/product/:productId'
+          />
+          <Route 
+            element={ <Cart /> }
+            path='/cart'
           />
         </Routes>
       </BrowserRouter>

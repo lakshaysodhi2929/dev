@@ -1,8 +1,7 @@
-import { addCartInput, productInfoParams, productsForCategoryParams, removeCartInput, signinInput, signupInput, trendingProductsParams } from '../../../common/types/index';
+import {productInfoParams, productsForCategoryParams, removeOrderInput, signinInput, signupInput, trendingProductsParams, updateCartInput } from '../../../common/types/index';
 import express from 'express';
 import jwt from "jsonwebtoken";
 import { Order, Product, User } from '../db';
-import { z } from "zod";
 import { authenticateJwt } from '../middleware';
 import mongoose from 'mongoose';
 
@@ -98,34 +97,52 @@ router.get('/api/product/category/:categoryName', authenticateJwt, async (req, r
   }
 })
 
-router.put('/api/cart/add', authenticateJwt, async (req, res) => {
-  let parsedInput = addCartInput.safeParse(req.body);
+router.put('/api/cart/update', authenticateJwt, async (req, res) => {
+  let parsedInput = updateCartInput.safeParse(req.body);
     if (!parsedInput.success) {
       return res.status(403).json({
         msg: "error in input"
       });
     }
   try{
-    const qty = parsedInput.data.quantity;
+    const qty = Number(parsedInput.data.quantity);
     const userId = req.headers["userId"];
     const orderedProduct = await Product.findOne({_id: parsedInput.data.productId});
-    const user = await User.findOne({_id: userId});
-    if(user && orderedProduct) {
-      user.cart.push({
-        product: orderedProduct,
-        quantity: qty
-      });
-      await user.save();
-      res.json({ message: 'product added in cart successfully'});
+    if(orderedProduct) {
+      let updatedUser;
+      if(qty>0){
+        updatedUser = await User.findOneAndUpdate(
+          { _id: userId, 'cart.product': orderedProduct._id },
+          { $set: { 'cart.$.quantity': qty } },
+          {new: true}
+        );
+      } else {
+        updatedUser = await User.findByIdAndUpdate(
+          userId,
+          {
+            $pull: {
+              cart: {
+                product: orderedProduct._id
+              }
+            }
+          },
+          {new: true}
+        );
+      }
+      if(updatedUser){
+        res.json({ message: 'product update in cart successfully', updatedCart: updatedUser.cart });
+      } else {
+        res.status(401).json({message: 'User Not found'});
+      }
     } else {
-      res.status(401).json({message: 'User or orderProduct Not found'});
+      res.status(401).json({message: 'OrderProduct Not found'});
     }
   }catch(err){
-      res.status(401).json({message: 'Error in adding product'});
+      res.status(401).json({message: 'Error in updateing product in cart'});
   }
 })
 
-router.put('api/order/add', authenticateJwt ,async (req, res)=>{
+router.post('api/order/add', authenticateJwt ,async (req, res)=>{
   try{
     const userId = req.headers["userId"];
     const user = await User.findOne({_id: userId});
@@ -161,54 +178,15 @@ router.put('api/order/add', authenticateJwt ,async (req, res)=>{
   }
 })
 
-router.put('/api/cart/remove', authenticateJwt, async (req, res) => {
-  let parsedInput = removeCartInput.safeParse(req.body);
+router.post('/api/order/remove', authenticateJwt, async (req, res) => {
+  let parsedInput = removeOrderInput.safeParse(req.params);
     if (!parsedInput.success) {
       return res.status(403).json({
         msg: "error in input"
       });
     }
   try{
-    const qty = Number(parsedInput.data.quantity);
-    const userId = req.headers["userId"];
-    const orderedProduct = await Product.findOne({_id: parsedInput.data.productId});
-    if(orderedProduct) {
-      let updatedUser;
-      if(qty>0){
-        updatedUser = await User.findOneAndUpdate(
-          { _id: userId, 'cart.product': orderedProduct._id },
-          { $set: { 'cart.$.quantity': qty } },
-          {new: true}
-        );
-      } else {
-        updatedUser = await User.findByIdAndUpdate(
-          userId,
-          {
-            $pull: {
-              cart: {
-                product: orderedProduct._id
-              }
-            }
-          },
-          {new: true}
-        );
-      }
-      if(updatedUser){
-        res.json({ message: 'product removed from cart successfully', updatedCart: updatedUser.cart });
-      } else {
-        res.status(401).json({message: 'User Not found'});
-      }
-    } else {
-      res.status(401).json({message: 'OrderProduct Not found'});
-    }
-  }catch(err){
-      res.status(401).json({message: 'Error in removing product from cart'});
-  }
-})
-
-router.put('/api/order/remove', authenticateJwt, async (req, res) => {
-  try{
-    const orderId = req.body.orderId;
+    const orderId = parsedInput.data.orderId;
       await Order.findByIdAndDelete(orderId);
       res.json({ message: 'order removed successfully'});
   }catch(err){

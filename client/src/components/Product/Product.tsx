@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getProductInfo } from "../../services/productService";
 import { IProduct } from "../../types";
 import './Product.scss';
+import { updateProductToCart } from "../../services/cartService";
 
 const Product = () => {
     const { productId } = useParams();
     const [productInfo, setProductInfo] = useState<IProduct>({} as IProduct);
+    const [quantity, setQuantity] = useState<number>(0);
+    const navigate = useNavigate();
 
     useEffect(()=>{
         (async ()=>{
@@ -16,6 +19,33 @@ const Product = () => {
             }
         })();
     },[productId]);
+
+    const updateProductInCart = (qty: number)=>{
+      if(productId){
+        updateProductToCart({
+          productId,
+          quantity: qty
+        });
+      } else {
+        console.log('enter a valid Product Id');
+      }
+    }
+
+    const OnAddToCartClick = () => {
+      const qty = quantity;
+      setQuantity(qty+1);
+      updateProductInCart(qty+1);
+    }
+
+    const OnRemoveFromCartClick = () => {
+      const qty = quantity;
+      setQuantity(qty-1);
+      updateProductInCart(qty-1);
+    }
+
+    const navigateToCart = () => {
+      navigate(`/cart`);
+    }
 
     return (
         <div className="container">
@@ -31,6 +61,13 @@ const Product = () => {
               </a>
             </div>
           )}
+          { quantity===0 && <div onClick={() => OnAddToCartClick()}>Add To Cart</div> }
+          { quantity>0 && <>
+            <div onClick={() => OnAddToCartClick()}>+</div>
+            <div>{quantity}</div>
+            <div onClick={() => OnRemoveFromCartClick()}>-</div>
+          </>}
+          <div onClick={navigateToCart}>Go To Cart</div>
         </div>
       );
     
