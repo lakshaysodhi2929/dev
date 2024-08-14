@@ -20,9 +20,9 @@ const Product = () => {
         })();
     },[productId]);
 
-    const updateProductInCart = (qty: number)=>{
+    const updateProductInCart = async (qty: number)=>{
       if(productId){
-        updateProductToCart({
+        await updateProductToCart({
           productId,
           quantity: qty
         });
@@ -31,16 +31,16 @@ const Product = () => {
       }
     }
 
-    const OnAddToCartClick = () => {
+    const OnAddToCartClick = async () => {
       const qty = quantity;
       setQuantity(qty+1);
-      updateProductInCart(qty+1);
+      await updateProductInCart(qty+1);
     }
 
-    const OnRemoveFromCartClick = () => {
+    const OnRemoveFromCartClick = async () => {
       const qty = quantity;
       setQuantity(qty-1);
-      updateProductInCart(qty-1);
+      await updateProductInCart(qty-1);
     }
 
     const navigateToCart = () => {
@@ -62,7 +62,7 @@ const Product = () => {
             </div>
           )}
           { quantity===0 && <div onClick={() => OnAddToCartClick()}>Add To Cart</div> }
-          { quantity>0 && <>
+          { quantity > 0 && <>
             <div onClick={() => OnAddToCartClick()}>+</div>
             <div>{quantity}</div>
             <div onClick={() => OnRemoveFromCartClick()}>-</div>

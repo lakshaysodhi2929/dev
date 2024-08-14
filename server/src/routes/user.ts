@@ -197,7 +197,10 @@ router.post('/api/order/remove', authenticateJwt, async (req, res) => {
 router.get('/api/user', authenticateJwt, async (req, res) => {
   try{
     const userId = req.headers["userId"];
-    const user = User.findOne({_id: userId});
+    const user = User.findOne({_id: userId}).populate({
+      path: 'cart.product',
+      model: 'Product'
+    });
     if(user){
       res.status(201).json(user);
     } else {

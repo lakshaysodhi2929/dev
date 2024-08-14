@@ -9,3 +9,16 @@ export interface IProduct {
     productOrderCnt?: number;
     productMonthlyViewCnt?: number;
 }
+
+export interface IItems {
+    product: IProduct;
+    quantity: number;
+}
+export interface IUser {
+    username: string;
+    password: string;
+    address: string;
+    phoneNumber: string;
+    cart: IItems[];
+    productsViewed: string[];
+}
