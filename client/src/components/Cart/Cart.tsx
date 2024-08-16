@@ -5,7 +5,7 @@ import { IItems } from "../../types";
 import { useNavigate } from "react-router-dom";
 import { updateProductToCart } from "../../services/cartService";
 
-//make order cancle workflow + mostly flow is sync here so it's not going to work like when cart get's updated actual quantity is not going to get showup
+//mostly flow is sync here so it's not going to work like when cart get's updated actual quantity is not going to get showup
 const Cart = () => {
     const [userCart, setUserCart] = useState<IItems[]>([]);
     const navigate = useNavigate();

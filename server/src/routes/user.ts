@@ -165,6 +165,9 @@ router.post('api/order/add', authenticateJwt ,async (req, res)=>{
         {
           $set: {
             cart: []
+          },
+          $push: {
+            orderHistory: newOrder._id
           }
         }
       );
@@ -200,6 +203,9 @@ router.get('/api/user', authenticateJwt, async (req, res) => {
     const user = User.findOne({_id: userId}).populate({
       path: 'cart.product',
       model: 'Product'
+    }).populate({
+      path: 'orderHistory',
+      model: 'Order'
     });
     if(user){
       res.status(201).json(user);

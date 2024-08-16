@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     address: String,
     phoneNumber: String,
     cart: [itemsSchema],
-    productsViewed: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}]
+    productsViewed: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
+    orderHistory: [{type: mongoose.Schema.Types.ObjectId, ref: 'Order'}]
 });
 
 const productSchema = new mongoose.Schema({
