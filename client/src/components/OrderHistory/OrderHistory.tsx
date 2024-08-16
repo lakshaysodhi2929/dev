@@ -26,13 +26,13 @@ const OrderHistory = () => {
     return (
         <>
         {
-            userOrders && userOrders.forEach((order)=>{
+            userOrders && userOrders.map((order)=>(
                 <div>
                     <div>{order.date.toDateString()}</div>
                     <div>{order.status}</div>
                     {order.status === 'Active' && <div onClick={()=>onCancelOrderClick(order._id)}>Cancel</div>}
                 </div>
-            })
+            ))
         }
             <div onClick={onOrderClick}>place Order</div>
         </>

@@ -8,6 +8,7 @@ import Home from './components/Home/Home';
 import CategoryItems from './components/CategoryItems/CategoryItems';
 import Product from './components/Product/Product';
 import Cart from './components/Cart/Cart';
+import OrderHistory from './components/OrderHistory/OrderHistory';
 
 export const App = () => (
     <>
@@ -23,7 +24,7 @@ export const App = () => (
           />
           <Route 
             element={ <Home /> }
-            path='/'
+            path='/home'
           />
           <Route 
             element={ <CategoryItems /> }
@@ -36,6 +37,10 @@ export const App = () => (
           <Route 
             element={ <Cart /> }
             path='/cart'
+          />
+          <Route 
+            element={ <OrderHistory /> }
+            path='/orders'
           />
         </Routes>
       </BrowserRouter>

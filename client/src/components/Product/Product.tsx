@@ -52,7 +52,7 @@ const Product = () => {
           <h2 className="title">{productInfo.name}</h2>
           <p className="category">Category: {productInfo.category}</p>
           <img src={productInfo.image} alt={productInfo.name} className="image" />
-          <p className="price">Price: Rs{productInfo.price.toFixed(2)}</p>
+          <p className="price">Price: Rs{productInfo.price}</p>
           <p className="description">{productInfo.description}</p>
           {productInfo.video && (
             <div className="video">

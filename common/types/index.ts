@@ -13,7 +13,7 @@ export const signinInput = z.object({
 });
 
 export const trendingProductsParams = z.object({
-    noOfProducts: z.number()
+    noOfProducts: z.preprocess((val) => Number(val), z.number())
 });
 
 export const productsForCategoryParams = z.object({
@@ -26,7 +26,7 @@ export const productInfoParams = z.object({
 
 export const updateCartInput = z.object({
     productId: z.string(),
-    quantity: z.number()
+    quantity: z.preprocess((val) => Number(val), z.number())
 });
 
 export const removeOrderInput = z.object({

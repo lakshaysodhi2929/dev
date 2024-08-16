@@ -2,23 +2,23 @@ import { useEffect, useState } from "react";
 import { getCategoryDict, getTrendingProducts } from "../../services/productService";
 import { useNavigate } from "react-router-dom";
 import { IProduct } from "../../types";
+import './home.scss'; // Import the SCSS file
 
-
-const Home = ()=>{
+const Home = () => {
     const [trendingProducts, setTrendingProducts] = useState<IProduct[]>([]);
     const [productCategories, setProductCategories] = useState<string[]>([]);
     const navigate = useNavigate();
 
-    useEffect(()=>{
-        (async () =>{
+    useEffect(() => {
+        (async () => {
             const [products, categories] = await Promise.all([
-                getTrendingProducts({noOfProducts: 20}),
+                getTrendingProducts({ noOfProducts: 20 }),
                 getCategoryDict()
             ]);
             setTrendingProducts(products);
             setProductCategories(categories);
         })();
-    },[]);
+    }, []);
 
     const onCategoryClick = (category: string) => {
         navigate(`/categoryItems/${category}`);
@@ -29,18 +29,32 @@ const Home = ()=>{
     }
 
     return (
-        <>
-            {trendingProducts.forEach((product)=>{
-                <div onClick={() => onProductClick(product._id)}>
-                    <div>{product.image}</div>
-                    <div>{product.name}</div>
-                    <div>{product.price}</div>
-                </div>
-            })}
-            {productCategories.forEach((category)=>{
-                <div onClick={() => onCategoryClick(category)}>{category}</div>
-            })}
-        </>
+        <div className="container">
+            <div className="productList">
+                {trendingProducts && trendingProducts.map((product) => (
+                    <div
+                        key={product._id}
+                        className="productItem"
+                        onClick={() => onProductClick(product._id)}
+                    >
+                        <img src={product.image} alt={product.name} />
+                        <div className="productName">{product.name}</div>
+                        <div className="productPrice">{product.price}</div>
+                    </div>
+                ))}
+            </div>
+            <div className="categoryList">
+                {productCategories && productCategories.map((category) => (
+                    <div
+                        key={category}
+                        className="categoryItem"
+                        onClick={() => onCategoryClick(category)}
+                    >
+                        {category}
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
 

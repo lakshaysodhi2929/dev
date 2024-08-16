@@ -38,7 +38,7 @@ const Cart = () => {
     return (
         <>
         {
-            userCart && userCart.forEach((cartItem)=>{
+            userCart && userCart.map((cartItem)=>(
                 <div onClick={() => onProductClick(cartItem.product._id)}>
                     <div>{cartItem.product.image}</div>
                     <div>{cartItem.product.name}</div>
@@ -49,7 +49,7 @@ const Cart = () => {
                         <div onClick={() => updateProductInCart(cartItem.quantity-1, cartItem.product._id)}>-</div>
                     </>}
                 </div>
-            })
+            ))
         }
             <div onClick={onOrderClick}>place Order</div>
         </>

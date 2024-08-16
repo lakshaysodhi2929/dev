@@ -25,14 +25,14 @@ const CategoryItems = () => {
     return (
         <>
             {
-                categoryProducts.forEach((product)=>{
+                categoryProducts.map((product)=>(
                     <div onClick={() => onProductClick(product._id)}>
                         <div>{product.image}</div>
                         <div>{product.name}</div>
                         <div>{product.price}</div>
                         <div>{product.description}</div>
                     </div>
-                })
+                ))
             }
         </>
     )

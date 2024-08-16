@@ -1,0 +1,68 @@
+/* home.scss */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.productList,
+.categoryList {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.productItem,
+.categoryItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+
+    &:hover {
+        background-color: #f0f0f0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .productName {
+        font-weight: bold;
+        margin: 10px 0;
+        color: #333;
+        /* Set text color for product names */
+    }
+
+    .productPrice {
+        color: #555;
+        /* Set text color for product prices */
+    }
+}
+
+.categoryItem {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f7f7f7;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    color: #333;
+    /* Set text color for category items */
+
+    &:hover {
+        background-color: #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}
