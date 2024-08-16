@@ -33,6 +33,19 @@ export const removeOrderInput = z.object({
     orderId: z.string()
 });
 
+export const addProductInput = z.object({
+    name: z.string(),
+    category: z.string(),
+    video: z.string(),
+    image: z.string(),
+    price: z.preprocess((val) => Number(val), z.number()),
+    description: z.string()
+});
+
+export const removeProductInput = z.object({
+    productId: z.string()
+});
+
 export type SignUpParams = z.infer<typeof signupInput>;
 
 export type SignInParams = z.infer<typeof signinInput>;
@@ -42,3 +55,7 @@ export type TrendingProductsParams = z.infer<typeof trendingProductsParams>;
 export type UpdateCartInput = z.infer<typeof updateCartInput>;
 
 export type RemoveOrderInput = z.infer<typeof removeOrderInput>;
+
+export type AddProductInput = z.infer<typeof addProductInput>;
+
+export type RemoveProductInput = z.infer<typeof removeProductInput>;
