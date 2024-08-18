@@ -3,6 +3,7 @@ import './SignUp.scss';
 import { SignUpParams } from '../../../../common/types';
 import { userSignUp } from '../../services/authService';
 import { setCookie } from '../../../utils/index.ts';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [userCredentials, setUserCredentials] = useState<SignUpParams>({
@@ -11,6 +12,7 @@ const SignUp = () => {
     phoneNumber: '',
     address: ''
   });
+  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,7 +25,10 @@ const SignUp = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const signUpResp = await userSignUp(userCredentials);
-    setCookie('token', signUpResp.token);
+    if(signUpResp.token){
+      setCookie('token', signUpResp.token);
+      navigate('/home');
+    }
   };
 
   return (

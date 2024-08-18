@@ -99,50 +99,68 @@ router.get('/api/product/category/:categoryName', authenticateJwt, async (req, r
 
 router.put('/api/cart/update', authenticateJwt, async (req, res) => {
   let parsedInput = updateCartInput.safeParse(req.body);
-    if (!parsedInput.success) {
-      return res.status(403).json({
-        msg: "error in input"
-      });
-    }
-  try{
+  if (!parsedInput.success) {
+    return res.status(400).json({
+      message: "Invalid request body",
+      errors: parsedInput.error.details, // Include specific validation errors
+    });
+  }
+
+  try {
     const qty = Number(parsedInput.data.quantity);
     const userId = req.headers["userId"];
-    const orderedProduct = await Product.findOne({_id: parsedInput.data.productId});
-    if(orderedProduct) {
-      let updatedUser;
-      if(qty>0){
-        updatedUser = await User.findOneAndUpdate(
-          { _id: userId, 'cart.product': orderedProduct._id },
-          { $set: { 'cart.$.quantity': qty } },
-          {new: true}
-        );
-      } else {
-        updatedUser = await User.findByIdAndUpdate(
-          userId,
-          {
-            $pull: {
-              cart: {
-                product: orderedProduct._id
-              }
-            }
-          },
-          {new: true}
-        );
-      }
-      if(updatedUser){
-        res.json({ message: 'product update in cart successfully', updatedCart: updatedUser.cart });
-      } else {
-        res.status(401).json({message: 'User Not found'});
-      }
-    } else {
-      res.status(401).json({message: 'OrderProduct Not found'});
-    }
-  }catch(err){
-      res.status(401).json({message: 'Error in updateing product in cart'});
-  }
-})
+    const productId = parsedInput.data.productId; // Use productId for clarity
 
-router.post('api/order/add', authenticateJwt ,async (req, res)=>{
+    if (isNaN(qty) || qty < 0) {
+      return res.status(400).json({ message: "Invalid quantity value" });
+    }
+
+    const orderedProduct = await Product.findOne({ _id: productId });
+    if (!orderedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    let updatedUser;
+
+    if (qty > 0) {
+      updatedUser = await User.findOneAndUpdate(
+        { _id: userId, "cart.product": productId },
+        { $set: { "cart.$.quantity": qty } },
+        { new: true }
+      );
+    } else {
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { cart: { product: productId } } },
+        { new: true }
+      );
+    }
+
+    if (!updatedUser) {
+      // User might exist but product not in cart (for qty > 0)
+      // or User might not exist (for qty === 0)
+      if (qty > 0) {
+        const user = await User.findById(userId);
+        if (user) {
+          user.cart.push({ product: productId, quantity: qty });
+          await user.save();
+          updatedUser = user;
+        } else {
+          return res.status(404).json({ message: "User not found" });
+        }
+      } else {
+        return res.status(404).json({ message: "Product not found in cart" });
+      }
+    }
+
+    res.json({ message: 'Product updated in cart successfully', updatedCart: updatedUser.cart });
+  } catch (err) {
+    console.error('Error in updating product in cart:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+router.post('/api/order/add', authenticateJwt ,async (req, res)=>{
   try{
     const userId = req.headers["userId"];
     const user = await User.findOne({_id: userId});
@@ -182,7 +200,7 @@ router.post('api/order/add', authenticateJwt ,async (req, res)=>{
 })
 
 router.post('/api/order/remove', authenticateJwt, async (req, res) => {
-  let parsedInput = removeOrderInput.safeParse(req.params);
+  let parsedInput = removeOrderInput.safeParse(req.body);
     if (!parsedInput.success) {
       return res.status(403).json({
         msg: "error in input"
@@ -198,60 +216,83 @@ router.post('/api/order/remove', authenticateJwt, async (req, res) => {
 })
 
 router.get('/api/user', authenticateJwt, async (req, res) => {
-  try{
+  try {
     const userId = req.headers["userId"];
-    const user = User.findOne({_id: userId}).populate({
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const user = await User.findOne({ _id: userId }).populate({
       path: 'cart.product',
       model: 'Product'
     }).populate({
       path: 'orderHistory',
       model: 'Order'
     });
-    if(user){
-      res.status(201).json(user);
-    } else {
-      res.status(401).json({message: "user doesn't exist"});
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    res.status(201).json(user);
   } catch (err) {
-    res.status(401).json({message: 'Error in getting User Details'});
+    console.error('Error in getting user details:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-})
+});
 
 router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, res) => {
   let parsedInput = productInfoParams.safeParse(req.params);
-    if (!parsedInput.success) {
-      return res.status(403).json({
-        msg: "error in input"
-      });
-    }
-  try{
+  if (!parsedInput.success) {
+    return res.status(403).json({
+      msg: "error in input"
+    });
+  }
+  try {
     const userId = req.headers["userId"];
     const user = await User.findOne({_id: userId});
     const productId = parsedInput.data.productId;
-    const updatedProduct= await User.findByIdAndUpdate(
-      productId,
-      { $inc: { productMonthlyViewCnt: 1 } },
-      {new: true}
-    );
-    try{
-      const objId = new mongoose.Types.ObjectId(productId)
-      if(user){
-        user.productsViewed.push(objId);
-        await user.save();
-      } else new Error('user not found');
-    } catch (err){
-      // if user data is not saved even then we want the product info to be served
-      console.log('error in saving user viewed Product', err);
+
+    // Check for valid product ID format
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid product ID format" });
     }
 
-    if(productId && updatedProduct){
-      res.status(201).json(updatedProduct);
-    } else {
-      res.status(401).json({message: "product doesn't exist"});
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { $inc: { productMonthlyViewCnt: 1 } },
+      { new: true }
+    );
+
+    // Check if product exists
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
     }
+
+    console.log(updatedProduct);
+    try {
+      const objId = new mongoose.Types.ObjectId(productId);
+      if (user) {
+        user.productsViewed.push(objId);
+        await user.save();
+      } else {
+        console.error('User not found');
+      }
+    } catch (err) {
+      console.error('error in saving user viewed Product', err);
+    }
+
+    res.status(201).json(updatedProduct);
   } catch (err) {
-    res.status(401).json({message: 'Error in getting product Details'});
+    // Handle specific errors like mongoose.Error.CastError
+    if (err instanceof mongoose.Error.CastError) {
+      return res.status(400).json({ message: "Invalid request data" });
+    } else {
+      console.error('Error in getting product details', err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
-})
+});
 
 export default router;

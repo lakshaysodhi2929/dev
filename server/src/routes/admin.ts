@@ -73,7 +73,7 @@ router.post('/api/product/removeProduct', authenticateJwt, async(req, res) => {
   }
 });
 
-router.get('api.product/getProductList',authenticateJwt, async (req,res) => {
+router.get('api/product/getProductList',authenticateJwt, async (req,res) => {
   try{
     const productList = await Product.find();
     res.json({ message: 'product List fetched Successfully', productList});

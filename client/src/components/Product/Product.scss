@@ -1,45 +1,22 @@
-// ProductDisplay.module.scss
+/* Product.scss */
 
-.container {
-    border: 1px solid #ccc;
-    padding: 16px;
-    border-radius: 8px;
-    max-width: 400px;
-    margin: 16px auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+.Product {
+  /* Inherit the base font color */
+  color: inherit;
+
+  h2,
+  p,
+  a {
+    /* Adjust for a slightly lighter shade if desired */
+    color: rgba(0, 0, 0, 0.85); /* Darker gray */
   }
-  
-  .title {
-    font-size: 1.5rem;
-    margin: 0 0 8px 0;
-  }
-  
-  .category {
-    font-size: 1rem;
-    color: #666;
-    margin-bottom: 8px;
-  }
-  
-  .image {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 8px;
-  }
-  
+
+  /* Target specific elements for black color */
   .price {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 8px;
+    color: #000; /* Black */
   }
-  
-  .description {
-    font-size: 1rem;
-    margin-bottom: 8px;
+
+  .quantity-controls div {
+    color: #000; /* Black */
   }
-  
-  .video {
-    margin-top: 8px;
-  }
-  
+}

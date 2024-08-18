@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getProductInfo } from "../../services/productService";
-import { IProduct } from "../../types";
+import { IItems, IProduct } from "../../types";
 import './Product.scss';
 import { updateProductToCart } from "../../services/cartService";
+import { getUser } from "../../services/userService";
 
 const Product = () => {
     const { productId } = useParams();
@@ -11,11 +12,22 @@ const Product = () => {
     const [quantity, setQuantity] = useState<number>(0);
     const navigate = useNavigate();
 
+    const getQuantityForProduct = (cart: IItems[]) => {
+      let qty = 0;
+      cart.forEach((item)=>{
+        if(item.product._id === productId) {
+          qty = item.quantity;
+        }
+      })
+      return qty;
+    }
+
     useEffect(()=>{
         (async ()=>{
             if(productId) {
-                const productInfo = await getProductInfo(productId);
+                const [productInfo, user] = await Promise.all([getProductInfo(productId), getUser()]);
                 setProductInfo(productInfo);
+                setQuantity(getQuantityForProduct(user.cart));
             }
         })();
     },[productId]);
@@ -33,14 +45,14 @@ const Product = () => {
 
     const OnAddToCartClick = async () => {
       const qty = quantity;
-      setQuantity(qty+1);
       await updateProductInCart(qty+1);
+      setQuantity(qty+1);
     }
 
     const OnRemoveFromCartClick = async () => {
       const qty = quantity;
-      setQuantity(qty-1);
       await updateProductInCart(qty-1);
+      setQuantity(qty-1);
     }
 
     const navigateToCart = () => {
@@ -48,14 +60,14 @@ const Product = () => {
     }
 
     return (
-        <div className="container">
-          <h2 className="title">{productInfo.name}</h2>
-          <p className="category">Category: {productInfo.category}</p>
-          <img src={productInfo.image} alt={productInfo.name} className="image" />
+        <div className="Product">
+          <h2>{productInfo.name}</h2>
+          <p>Category: {productInfo.category}</p>
+          <img src={productInfo.image} alt={productInfo.name}/>
           <p className="price">Price: Rs{productInfo.price}</p>
-          <p className="description">{productInfo.description}</p>
+          <p>{productInfo.description}</p>
           {productInfo.video && (
-            <div className="video">
+            <div>
               <a href={productInfo.video} target="_blank" rel="noopener noreferrer">
                 Watch Video
               </a>
@@ -63,9 +75,9 @@ const Product = () => {
           )}
           { quantity===0 && <div onClick={() => OnAddToCartClick()}>Add To Cart</div> }
           { quantity > 0 && <>
-            <div onClick={() => OnAddToCartClick()}>+</div>
+            <div className="quantity-controls" onClick={() => OnAddToCartClick()}>+</div>
             <div>{quantity}</div>
-            <div onClick={() => OnRemoveFromCartClick()}>-</div>
+            <div className="quantity-controls" onClick={() => OnRemoveFromCartClick()}>-</div>
           </>}
           <div onClick={navigateToCart}>Go To Cart</div>
         </div>

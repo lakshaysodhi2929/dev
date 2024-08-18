@@ -1,8 +1,8 @@
+import './categoryItems.scss';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getProductsForCategory } from "../../services/productService";
 import { IProduct } from "../../types";
-
 
 const CategoryItems = () => {
     const { category } = useParams();
@@ -25,8 +25,8 @@ const CategoryItems = () => {
     return (
         <>
             {
-                categoryProducts.map((product)=>(
-                    <div onClick={() => onProductClick(product._id)}>
+                categoryProducts && categoryProducts.map((product)=>(
+                    <div className="category-item" onClick={() => onProductClick(product._id)}>
                         <div>{product.image}</div>
                         <div>{product.name}</div>
                         <div>{product.price}</div>

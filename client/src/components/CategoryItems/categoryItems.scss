@@ -1,0 +1,13 @@
+.category-item {
+    color: black; // Ensures text is black
+  
+    &:hover {
+      cursor: pointer;
+      // Add any hover effects if needed
+    }
+  
+    div {
+      margin-bottom: 10px; // Adds some spacing between elements
+    }
+  }
+  

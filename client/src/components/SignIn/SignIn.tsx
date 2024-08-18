@@ -3,12 +3,14 @@ import './SignIn.scss';
 import { SignInParams } from '../../../../common/types';
 import { userLogin } from '../../services/authService';
 import { setCookie } from '../../../utils/index.ts';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn = () => {
   const [userCredentials, setUserCredentials] = useState<SignInParams>({
     username: '',
     password: ''
   });
+  const navigate = useNavigate(); 
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -21,7 +23,10 @@ const SignIn = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const loginResp = await userLogin(userCredentials);
-    setCookie('token', loginResp.token);
+    if(loginResp.token){
+      setCookie('token', loginResp.token);
+      navigate('/home');
+    }
   };
 
   return (
