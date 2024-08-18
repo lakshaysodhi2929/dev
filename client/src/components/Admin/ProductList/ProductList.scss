@@ -1,0 +1,22 @@
+/* Product.scss */
+
+.ProductList {
+    /* Inherit the base font color */
+    color: inherit;
+  
+    h2,
+    p,
+    a {
+      /* Adjust for a slightly lighter shade if desired */
+      color: rgba(0, 0, 0, 0.85); /* Darker gray */
+    }
+  
+    /* Target specific elements for black color */
+    .price {
+      color: #000; /* Black */
+    }
+  
+    .quantity-controls div {
+      color: #000; /* Black */
+    }
+  }

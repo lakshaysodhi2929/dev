@@ -73,7 +73,7 @@ router.post('/api/product/removeProduct', authenticateJwt, async(req, res) => {
   }
 });
 
-router.get('api/product/getProductList',authenticateJwt, async (req,res) => {
+router.get('/api/product/getProductList',authenticateJwt, async (req,res) => {
   try{
     const productList = await Product.find();
     res.json({ message: 'product List fetched Successfully', productList});
@@ -125,6 +125,7 @@ router.put('/api/order/markOrderComplete', authenticateJwt, async(req, res) => {
 });
 
 router.get('/api/product/productsViewed', authenticateJwt, async(req, res)=>{
+  //make this client specific
   const userId = req.headers["userId"];
   try{
     const user = await User.findById(userId);

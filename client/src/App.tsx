@@ -9,6 +9,9 @@ import CategoryItems from './components/CategoryItems/CategoryItems';
 import Product from './components/Product/Product';
 import Cart from './components/Cart/Cart';
 import OrderHistory from './components/OrderHistory/OrderHistory';
+import AdminLogin  from './components/Admin/AdminLogin/AdminLogin';
+import ProductList from './components/Admin/ProductList/ProductList';
+import AddProduct from './components/Admin/AddProduct/AddProduct';
 
 export const App = () => (
     <>
@@ -41,6 +44,18 @@ export const App = () => (
           <Route 
             element={ <OrderHistory /> }
             path='/orders'
+          />
+          <Route 
+            element={ <AdminLogin /> }
+            path='/admin/login'
+          />
+          <Route 
+            element={ <ProductList /> }
+            path='/admin/productList'
+          />
+          <Route 
+            element={ <AddProduct /> }
+            path='/admin/addProduct'
           />
         </Routes>
       </BrowserRouter>
