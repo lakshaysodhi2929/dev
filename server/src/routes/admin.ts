@@ -3,7 +3,7 @@ import express from 'express';
 import { z } from "zod";
 import { authenticateJwt } from '../middleware';
 import { Admin, Order, Product, User } from '../db';
-import { addProductInput, removeProductInput } from '../../../common/types';
+import { addProductInput, changeOrderStatusInput, orderListInput, removeProductInput } from '../../../common/types';
 
 const router = express.Router();
 
@@ -83,13 +83,21 @@ router.get('/api/product/getProductList',authenticateJwt, async (req,res) => {
 });
 
 router.get('/api/order/orderList', authenticateJwt, async(req, res) => {
-    const {start, limit} = req.query;
+  let parsedInput = orderListInput.safeParse(req.query);
+  if (!parsedInput.success) {
+    return res.status(403).json({
+      msg: "error in input"
+    });
+  }
     try{
         const activeOrders = await Order.find({ status: 'active' })
         .sort({ date: -1 })
-        .skip(start)
-        .limit(limit)
-        .populate('product')
+        .skip(parsedInput.data.start)
+        .limit(parsedInput.data.limit)
+        .populate({
+          path: 'products.product',
+          model: 'Product'
+        })
         .populate('user');
 
         res.status(201).json(activeOrders);
@@ -99,7 +107,13 @@ router.get('/api/order/orderList', authenticateJwt, async(req, res) => {
 });
 
 router.put('/api/order/rejectOrder', authenticateJwt, async(req, res) => {
-    const {orderId} = req.body;
+  let parsedInput = changeOrderStatusInput.safeParse(req.body);
+  if (!parsedInput.success) {
+    return res.status(403).json({
+      msg: "error in input"
+    });
+  }
+    const orderId = parsedInput.data.orderId;
     try{
       await Order.findByIdAndUpdate(
         orderId,
@@ -112,7 +126,13 @@ router.put('/api/order/rejectOrder', authenticateJwt, async(req, res) => {
 });
 
 router.put('/api/order/markOrderComplete', authenticateJwt, async(req, res) => {
-  const {orderId} = req.body;
+  let parsedInput = changeOrderStatusInput.safeParse(req.body);
+  if (!parsedInput.success) {
+    return res.status(403).json({
+      msg: "error in input"
+    });
+  }
+    const orderId = parsedInput.data.orderId;
     try{
         await Order.findByIdAndUpdate(
           orderId,
