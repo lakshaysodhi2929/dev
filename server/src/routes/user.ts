@@ -7,6 +7,8 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
+const SECRET = 'userLakshay';
+
 router.post('/signup', async (req, res)=>{
     let parsedInput = signupInput.safeParse(req.body)
     if (!parsedInput.success) {
@@ -26,7 +28,7 @@ router.post('/signup', async (req, res)=>{
     } else {
       const newUser = new User({ username, password, address, phoneNumber, cart: [], productsViewed: [] });
       await newUser.save();
-      const token = jwt.sign({ id: newUser._id }, 'lakshay', { expiresIn: '1h' });
+      const token = jwt.sign({ id: newUser._id }, SECRET, { expiresIn: '1h' });
       res.json({ message: 'User created successfully', token });
     }
 });
@@ -44,14 +46,14 @@ router.post('/login', async (req, res) => {
 
     const user = await User.findOne({ username, password });
     if (user) {
-      const token = jwt.sign({ id: user._id }, 'lakshay', { expiresIn: '1h' });
+      const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: '1h' });
       res.json({ message: 'Logged in successfully', token });
     } else {
       res.status(403).json({ message: 'Invalid username or password' });
     }
   });
 
-router.get('/api/product/trendingProducts', authenticateJwt, async (req, res) => {
+router.get('/api/product/trendingProducts', authenticateJwt(SECRET), async (req, res) => {
   let parsedInput = trendingProductsParams.safeParse(req.query);
     if (!parsedInput.success) {
       return res.status(403).json({
@@ -72,7 +74,7 @@ router.get('/api/product/trendingProducts', authenticateJwt, async (req, res) =>
 })
 
 
-router.get('/api/product/categoryDict', authenticateJwt, async (req, res) => {
+router.get('/api/product/categoryDict', authenticateJwt(SECRET), async (req, res) => {
   try{
     const uniqueCategories = await Product.distinct('category');
       res.status(201).json(uniqueCategories);
@@ -81,7 +83,7 @@ router.get('/api/product/categoryDict', authenticateJwt, async (req, res) => {
   }
 })
 
-router.get('/api/product/category/:categoryName', authenticateJwt, async (req, res) => {
+router.get('/api/product/category/:categoryName', authenticateJwt(SECRET), async (req, res) => {
   let parsedInput = productsForCategoryParams.safeParse(req.params);
     if (!parsedInput.success) {
       return res.status(403).json({
@@ -97,7 +99,7 @@ router.get('/api/product/category/:categoryName', authenticateJwt, async (req, r
   }
 })
 
-router.put('/api/cart/update', authenticateJwt, async (req, res) => {
+router.put('/api/cart/update', authenticateJwt(SECRET), async (req, res) => {
   let parsedInput = updateCartInput.safeParse(req.body);
   if (!parsedInput.success) {
     return res.status(400).json({
@@ -160,7 +162,7 @@ router.put('/api/cart/update', authenticateJwt, async (req, res) => {
   }
 });
 
-router.post('/api/order/add', authenticateJwt ,async (req, res)=>{
+router.post('/api/order/add', authenticateJwt(SECRET) ,async (req, res)=>{
   try{
     const userId = req.headers["userId"];
     const user = await User.findOne({_id: userId});
@@ -199,7 +201,7 @@ router.post('/api/order/add', authenticateJwt ,async (req, res)=>{
   }
 })
 
-router.post('/api/order/remove', authenticateJwt, async (req, res) => {
+router.post('/api/order/remove', authenticateJwt(SECRET), async (req, res) => {
   let parsedInput = removeOrderInput.safeParse(req.body);
     if (!parsedInput.success) {
       return res.status(403).json({
@@ -215,7 +217,7 @@ router.post('/api/order/remove', authenticateJwt, async (req, res) => {
   }
 })
 
-router.get('/api/user', authenticateJwt, async (req, res) => {
+router.get('/api/user', authenticateJwt(SECRET), async (req, res) => {
   try {
     const userId = req.headers["userId"];
 
@@ -242,7 +244,7 @@ router.get('/api/user', authenticateJwt, async (req, res) => {
   }
 });
 
-router.get('/api/product/productInfo/:productId', authenticateJwt, async (req, res) => {
+router.get('/api/product/productInfo/:productId', authenticateJwt(SECRET), async (req, res) => {
   let parsedInput = productInfoParams.safeParse(req.params);
   if (!parsedInput.success) {
     return res.status(403).json({

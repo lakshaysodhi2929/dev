@@ -1,13 +1,10 @@
 import jwt from 'jsonwebtoken';
-export const SECRET = 'lakshay';  // This should be in an environment variable in a real application
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
 
-// here once the user signin or signup a token should be set in local storage and on each request that token
-// should be passed in headers once that token get's authenticated by this middleware that request can be served.
-
-export const authenticateJwt = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateJwt = (SECRET: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-  
+    
     if (authHeader) {
       const token = authHeader.split(' ')[1];
       jwt.verify(token, SECRET, (err, payload) => {
@@ -28,4 +25,4 @@ export const authenticateJwt = (req: Request, res: Response, next: NextFunction)
       res.sendStatus(401);
     }
   };
-  
+};

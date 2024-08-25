@@ -11,6 +11,7 @@ const signinInput = z.object({
     username: z.string(),
     password: z.string()
 });
+const SECRET = 'adminLakshay';
 
 router.post('/login', async (req, res) => {
     let parsedInput = signinInput.safeParse(req.body)
@@ -25,14 +26,14 @@ router.post('/login', async (req, res) => {
 
     const admin = await Admin.findOne({ username, password });
     if (admin) {
-      const token = jwt.sign({ id: admin._id }, 'lakshay', { expiresIn: '1h' });
+      const token = jwt.sign({ id: admin._id }, SECRET, { expiresIn: '1h' });
       res.json({ message: 'Logged in successfully', token });
     } else {
       res.status(403).json({ message: 'Invalid username or password' });
     }
 });
 
-router.post('/api/product/addProduct', authenticateJwt, async(req, res) => {
+router.post('/api/product/addProduct', authenticateJwt(SECRET), async(req, res) => {
   let parsedInput = addProductInput.safeParse(req.body);
   if (!parsedInput.success) {
     return res.status(403).json({
@@ -58,7 +59,7 @@ router.post('/api/product/addProduct', authenticateJwt, async(req, res) => {
   }
 });
 
-router.post('/api/product/removeProduct', authenticateJwt, async(req, res) => {
+router.post('/api/product/removeProduct', authenticateJwt(SECRET), async(req, res) => {
   let parsedInput = removeProductInput.safeParse(req.body);
   if (!parsedInput.success) {
     return res.status(403).json({
@@ -73,8 +74,9 @@ router.post('/api/product/removeProduct', authenticateJwt, async(req, res) => {
   }
 });
 
-router.get('/api/product/getProductList',authenticateJwt, async (req,res) => {
+router.get('/api/product/getProductList',authenticateJwt(SECRET), async (req,res) => {
   try{
+    console.log('hi');
     const productList = await Product.find();
     res.json({ message: 'product List fetched Successfully', productList});
   }catch(err) {
@@ -82,7 +84,7 @@ router.get('/api/product/getProductList',authenticateJwt, async (req,res) => {
   }
 });
 
-router.get('/api/order/orderList', authenticateJwt, async(req, res) => {
+router.get('/api/order/orderList', authenticateJwt(SECRET), async(req, res) => {
   let parsedInput = orderListInput.safeParse(req.query);
   if (!parsedInput.success) {
     return res.status(403).json({
@@ -90,7 +92,7 @@ router.get('/api/order/orderList', authenticateJwt, async(req, res) => {
     });
   }
     try{
-        const activeOrders = await Order.find({ status: 'active' })
+        const activeOrders = await Order.find({ status: "Active" })
         .sort({ date: -1 })
         .skip(parsedInput.data.start)
         .limit(parsedInput.data.limit)
@@ -106,7 +108,7 @@ router.get('/api/order/orderList', authenticateJwt, async(req, res) => {
     }
 });
 
-router.put('/api/order/rejectOrder', authenticateJwt, async(req, res) => {
+router.put('/api/order/rejectOrder', authenticateJwt(SECRET), async(req, res) => {
   let parsedInput = changeOrderStatusInput.safeParse(req.body);
   if (!parsedInput.success) {
     return res.status(403).json({
@@ -125,7 +127,7 @@ router.put('/api/order/rejectOrder', authenticateJwt, async(req, res) => {
     }
 });
 
-router.put('/api/order/markOrderComplete', authenticateJwt, async(req, res) => {
+router.put('/api/order/markOrderComplete', authenticateJwt(SECRET), async(req, res) => {
   let parsedInput = changeOrderStatusInput.safeParse(req.body);
   if (!parsedInput.success) {
     return res.status(403).json({
@@ -144,7 +146,7 @@ router.put('/api/order/markOrderComplete', authenticateJwt, async(req, res) => {
     } 
 });
 
-router.get('/api/product/productsViewed', authenticateJwt, async(req, res)=>{
+router.get('/api/product/productsViewed', authenticateJwt(SECRET), async(req, res)=>{
   //make this client specific
   const userId = req.headers["userId"];
   try{
@@ -155,7 +157,7 @@ router.get('/api/product/productsViewed', authenticateJwt, async(req, res)=>{
   }
 })
 
-router.get('/api/order/mostOrdered', authenticateJwt, async(req, res)=>{
+router.get('/api/order/mostOrdered', authenticateJwt(SECRET), async(req, res)=>{
   const noOfProducts = req.query.noOfProducts;
     try{
       const topProducts = await Product.find().sort({productOrderCnt: -1}).limit(noOfProducts).exec();

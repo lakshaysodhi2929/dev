@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
-import './SignIn.scss';
+import './adminLogin.scss';
 import { SignInParams } from '../../../../../common/types/index.ts';
 import { setCookie } from '../../../../utils/index.ts';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,7 @@ const SignIn = () => {
     const loginResp = await adminLogin(userCredentials);
     if(loginResp.token){
       setCookie('token', loginResp.token);
-      navigate('/home');
+      navigate('/admin/orderList');
     }
   };
 

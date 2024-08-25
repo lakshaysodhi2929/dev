@@ -12,6 +12,7 @@ import OrderHistory from './components/OrderHistory/OrderHistory';
 import AdminLogin  from './components/Admin/AdminLogin/AdminLogin';
 import ProductList from './components/Admin/ProductList/ProductList';
 import AddProduct from './components/Admin/AddProduct/AddProduct';
+import OrderList from './components/Admin/OrdersList/OrderList';
 
 export const App = () => (
     <>
@@ -56,6 +57,10 @@ export const App = () => (
           <Route 
             element={ <AddProduct /> }
             path='/admin/addProduct'
+          />
+          <Route 
+            element={ <OrderList /> }
+            path='/admin/orderList'
           />
         </Routes>
       </BrowserRouter>

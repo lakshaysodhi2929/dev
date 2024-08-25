@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import './ProductList.scss';
+import './OrderList.scss';
 import { IOrder } from "../../../types";
 import { useNavigate } from "react-router-dom";
 import { getOrderList, markOrderComplete, rejectOrder } from "../../../services/adminServices/orderService";
@@ -26,12 +26,14 @@ const Product = () => {
         rejectOrder({
             orderId
         });
+        window.location.reload();
     }
 
     const onMarkOrderComplete = async (orderId: string) => {
         markOrderComplete({
             orderId
         });
+        window.location.reload();
     }
 
     return (
